@@ -48,6 +48,14 @@ class CitizenController extends Controller
             'city_id' => 'required|exists:cities,id',
             'address' => 'nullable|string|max:1000',
             'phone' => 'nullable|string|max:15',
+        ], [
+            'first_name.required' => 'El nombre es obligatorio.',
+            'last_name.required' => 'El apellido es obligatorio.',
+            'birth_date.required' => 'La fecha de nacimiento es obligatoria.',
+            'city_id.required' => 'La ciudad es obligatoria.',
+            'address.max' => 'La dirección no puede exceder los 1000 caracteres.',
+            'phone.max' => 'El teléfono no puede exceder los 15 caracteres.',
+            'birth_date.before' => 'La fecha de nacimiento debe ser anterior a hoy.'
         ]);
         try {
             Citizen::create($request->all());
@@ -96,6 +104,14 @@ class CitizenController extends Controller
             'city_id' => 'required|exists:cities,id',
             'address' => 'nullable|string|max:1000',
             'phone' => 'nullable|string|max:15',
+        ], [
+            'first_name.required' => 'El nombre es obligatorio.',
+            'last_name.required' => 'El apellido es obligatorio.',
+            'birth_date.required' => 'La fecha de nacimiento es obligatoria.',
+            'city_id.required' => 'La ciudad es obligatoria.',
+            'address.max' => 'La dirección no puede exceder los 1000 caracteres.',
+            'phone.max' => 'El teléfono no puede exceder los 15 caracteres.',
+            'birth_date.before' => 'La fecha de nacimiento debe ser anterior a hoy.',
         ]);
         try {
             $citizen = Citizen::findOrFail($id);

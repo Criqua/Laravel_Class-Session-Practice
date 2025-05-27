@@ -32,6 +32,8 @@
             <!-- Page Content -->
             <main>
                 {{ $slot }}
+
+                @include('partials.alerts')
                 
                 @stack('scripts')
             </main>
