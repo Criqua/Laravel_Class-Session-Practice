@@ -10,6 +10,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::post('/citizens/import', [CitizenController::class, 'import'])->name('citizens.import');
+Route::get('/citizens/import/errors', [CitizenController::class, 'importErrors'])->name('citizens.import.errors');
+Route::post('/citizens/import/save', [CitizenController::class, 'saveImported'])->name('citizens.import.save');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

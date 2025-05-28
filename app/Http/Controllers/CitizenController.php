@@ -36,6 +36,72 @@ class CitizenController extends Controller
         }
     }
 
+    public function import(Request $request)
+    {
+        $request->validate(['file' => 'required|file|mimes:csv,xlsx,xls']);
+
+        $rows = Excel::toCollection(null, $request->file('file'))[0];
+
+        $citizens = [];
+        $errors = [];
+
+        foreach ($rows->skip(1) as $index => $row) {
+            $data = [
+                'first_name' => $row[0],
+                'last_name' => $row[1],
+                'birth_date' => $row[2],
+                'city_id' => $row[3],
+                'address' => $row[4],
+                'phone' => $row[5],
+            ];
+
+            $validator = Validator::make($data, [
+                'first_name' => 'required|string|max:60',
+                'last_name' => 'required|string|max:60',
+                'birth_date' => 'required|date|before:today',
+                'city_id' => 'required|exists:cities,id',
+                'address' => 'nullable|string|max:1000',
+                'phone' => 'nullable|string|max:15',
+            ]);
+
+            if ($validator->fails()) {
+                $errors[$index + 2] = $validator->errors()->all();
+            }
+
+            $citizens[$index + 2] = $data;
+        }
+
+        session(['import_citizens' => $citizens, 'import_errors' => $errors]);
+
+        if (!empty($errors)) {
+            return redirect()->route('citizens.import.errors');
+        }
+
+        return redirect()->route('citizens.import.errors')->with('success', 'Todo válido, confirme para guardar.');
+    }
+
+    public function importErrors()
+    {
+        $citizens = session('import_citizens', []);
+        $errors = session('import_errors', []);
+
+        return view('citizens.import_errors', compact('citizens', 'errors'));
+    }
+
+    public function saveImported(Request $request)
+    {
+        $citizens = $request->input('citizens', []);
+
+        foreach ($citizens as $citizen) {
+            Citizen::create($citizen);
+        }
+
+        session()->forget(['import_citizens', 'import_errors']);
+
+        return redirect()->route('citizens.index')->with('success', 'Ciudadanos importados correctamente.');
+    }
+
+
     /**
      * Store a newly created resource in storage.
      */
