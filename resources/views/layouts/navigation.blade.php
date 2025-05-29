@@ -16,10 +16,10 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     <x-nav-link :href="route('cities.index')" :active="request()->routeIs('cities.index')">
-                        {{ __('Cities') }}
+                        {{ __('Ciudades') }}
                     </x-nav-link>
                     <x-nav-link :href="route('citizens.index')" :active="request()->routeIs('citizens.index')">
-                        {{ __('Citizens') }}
+                        {{ __('Ciudadanos') }}
                     </x-nav-link>
                     <div class="flex items-center space-x-4">
                         <a
@@ -94,10 +94,10 @@
             {{ __('Dashboard') }}
         </x-responsive-nav-link>
         <x-responsive-nav-link :href="route('cities.index')" :active="request()->routeIs('cities.*')">
-            {{ __('Cities') }}
+            {{ __('Ciudades') }}
         </x-responsive-nav-link>
         <x-responsive-nav-link :href="route('citizens.index')" :active="request()->routeIs('citizens.*')">
-            {{ __('Citizens') }}
+            {{ __('Ciudadanos') }}
         </x-responsive-nav-link>
         <x-responsive-nav-link :href="route('report')">
             <i class="fas fa-paper-plane mr-2"></i>{{ __('Enviar correo') }}

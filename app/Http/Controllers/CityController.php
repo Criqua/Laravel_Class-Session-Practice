@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\City;
+use App\Imports\CitiesImport;
 use App\Exports\CitiesExport;
 use Maatwebsite\Excel\Facades\Excel;
-use Validator;
+use PDF;
 
 class CityController extends Controller
 {
@@ -38,75 +39,6 @@ class CityController extends Controller
     }
 
     /**
-     * Import CSV/XLS into cities.
-     */
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|file|mimes:csv,xlsx,xls'
-        ]);
-
-        $rows = Excel::toCollection(null, $request->file('file'))[0];
-
-        $cities = [];
-        $errors = [];
-
-        foreach ($rows->skip(1) as $idx => $row) {
-            $data = [
-                'name'        => $row[0],
-                'description' => $row[1] ?? null,
-            ];
-
-            $validator = Validator::make($data, [
-                'name'        => 'required|string|max:255',
-                'description' => 'nullable|string|max:1000',
-            ]);
-
-            if ($validator->fails()) {
-                $errors[$idx + 2] = $validator->errors()->all();
-            }
-
-            $cities[$idx + 2] = $data;
-        }
-
-        session([
-            'import_cities' => $cities,
-            'import_errors' => $errors,
-        ]);
-
-        if (!empty($errors)) {
-            return redirect()->route('cities.import.errors');
-        }
-
-        return redirect()->route('cities.import.errors')
-            ->with('success', 'All rows valid—confirm to save.');
-    }
-
-    /**
-     * Show import errors & preview.
-     */
-    public function importErrors()
-    {
-        $cities = session('import_cities', []);
-        $errors = session('import_errors', []);
-        return view('cities.import_errors', compact('cities', 'errors'));
-    }
-
-    /**
-     * Save imported cities after confirmation.
-     */
-    public function saveImported(Request $request)
-    {
-        $cities = $request->input('cities', []);
-        foreach ($cities as $city) {
-            City::create($city);
-        }
-        session()->forget(['import_cities', 'import_errors']);
-        return redirect()->route('cities.index')
-            ->with('success', 'Ciudades importadas exitosamente.');
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -114,6 +46,10 @@ class CityController extends Controller
         $request->validate([
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+        ], [
+            'name.required' => 'El nombre de la ciudad es obligatorio.',
+            'name.max'      => 'El nombre de la ciudad no puede exceder los 255 caracteres.',
+            'description.max' => 'La descripción no puede exceder los 1000 caracteres.',
         ]);
 
         try {
@@ -162,6 +98,10 @@ class CityController extends Controller
         $request->validate([
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+        ], [
+            'name.required' => 'El nombre de la ciudad es obligatorio.',
+            'name.max'      => 'El nombre de la ciudad no puede exceder los 255 caracteres.',
+            'description.max' => 'La descripción no puede exceder los 1000 caracteres.',
         ]);
 
         try {
@@ -192,27 +132,70 @@ class CityController extends Controller
     }
 
     /**
-     * Export all cities as CSV.
+     * Import cities from an Excel file.
      */
-    public function exportCsv()
+    public function showImportForm()
     {
-        return Excel::download(
-            new CitiesExport,
-            'cities.csv',
-            \Maatwebsite\Excel\Excel::CSV,
-            ['Content-Type' => 'text/csv']
-        );
+        return view('cities.import');
     }
 
     /**
-     * Export all cities as XLSX.
+     * Import cities from an Excel or CSV file.
      */
-    public function exportXls()
+    public function import(Request $request)
     {
-        return Excel::download(
-            new CitiesExport,
-            'cities.xlsx',
-            \Maatwebsite\Excel\Excel::XLSX
-        );
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,csv,xls',
+        ]);
+
+        try {
+            Excel::import(new CitiesImport, $request->file('file'));
+            return redirect()->route('cities.index')
+                ->with('success', 'Ciudades importadas con éxito.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Error al importar las ciudades: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export cities to a CSV file.
+     */
+    public function exportCsv()
+    {
+        try {
+            return Excel::download(new CitiesExport, 'cities.csv', \Maatwebsite\Excel\Excel::CSV);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Error al exportar las ciudades: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export cities to an Excel file.
+     */
+    public function exportXlsx()
+    {
+        try {
+            return Excel::download(new CitiesExport, 'cities.xlsx');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Error al exportar las ciudades: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Show the form for importing cities.
+     */
+    public function exportPdf()
+    {
+        try {
+            $cities = City::orderBy('name', 'asc')->get();
+            $pdf = PDF::loadView('cities.pdf', compact('cities'))->setPaper('A4', 'landscape');
+            return $pdf->download('cities_' . \date('Y-m-d_H-i-s') . '.pdf');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Error al exportar las ciudades a PDF: ' . $e->getMessage());
+        }
     }
 }
