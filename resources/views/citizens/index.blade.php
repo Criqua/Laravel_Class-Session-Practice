@@ -10,11 +10,25 @@
 
             <div class="flex gap-3">
                 <a href="{{ route('citizens.create') }}"
-                   class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900 transition">
+                class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900 transition">
                     <i class="fas fa-plus"></i>
                     {{ __('Crear Ciudadano') }}
                 </a>
+
+                <div class="relative group">
+                    <button class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-900 transition">
+                        <i class="fas fa-file-export"></i>
+                        {{ __('Exportar') }}
+                        <i class="fas fa-caret-down"></i>
+                    </button>
+
+                    <div class="absolute hidden group-hover:block bg-white dark:bg-gray-800 shadow-lg rounded-lg z-10 w-40">
+                        <a href="{{ route('citizens.export.csv') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">{{ __('Exportar CSV') }}</a>
+                        <a href="{{ route('citizens.export.xlsx') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">{{ __('Exportar Excel') }}</a>
+                    </div>
+                </div>
             </div>
+
         </div>
     </x-slot>
 
